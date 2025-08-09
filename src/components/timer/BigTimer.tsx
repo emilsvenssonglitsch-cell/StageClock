@@ -1,21 +1,25 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { Play, Pause, RotateCcw, Maximize2, Minimize2 } from "lucide-react";
+import { Play, Pause, RotateCcw, Maximize2, Minimize2, Plus, Minus, Info, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
+import { useTimerPreferences } from "@/components/timer/useTimerPreferences";
 
 const presets = [1, 5, 10, 15, 20, 25, 30]; // minutes
 
-function formatTime(ms: number) {
-  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+function formatTime(ms: number, allowNegative = false) {
+  const neg = ms < 0;
+  const totalSeconds = Math.floor(Math.abs(ms) / 1000);
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
-  if (hours > 0) {
-    return [hours, minutes, seconds].map((v) => String(v).padStart(2, "0")).join(":");
-  }
-  return [minutes, seconds].map((v) => String(v).padStart(2, "0")).join(":");
+  const str = hours > 0
+    ? [hours, minutes, seconds].map((v) => String(v).padStart(2, "0")).join(":")
+    : [minutes, seconds].map((v) => String(v).padStart(2, "0")).join(":");
+  return allowNegative && neg ? `+${str}` : str;
 }
 
 function useInterval(callback: () => void, delay: number | null) {
@@ -37,6 +41,14 @@ export default function BigTimer() {
   const [remainingMs, setRemainingMs] = React.useState(totalMs);
   const [running, setRunning] = React.useState(false);
   const [targetEnd, setTargetEnd] = React.useState<number | null>(null);
+  const [repeat, setRepeat] = React.useState<boolean>(() => localStorage.getItem("timer:repeat") === "1");
+  const [prefs] = useTimerPreferences();
+  const doneNotifiedRef = React.useRef(false);
+  const prevSecondRef = React.useRef<number | null>(null);
+
+  React.useEffect(() => {
+    localStorage.setItem("timer:repeat", repeat ? "1" : "0");
+  }, [repeat]);
 
   const minutesInput = Math.floor(totalMs / 60000);
   const secondsInput = Math.floor((totalMs % 60000) / 1000);
@@ -56,25 +68,53 @@ export default function BigTimer() {
     return () => window.removeEventListener("mousemove", handler);
   }, []);
 
-  // Timer tick
-  useInterval(() => {
-    if (!running || targetEnd === null) return;
-    const msLeft = targetEnd - Date.now();
-    if (msLeft <= 0) {
-      setRunning(false);
-      setRemainingMs(0);
+// Timer tick
+useInterval(() => {
+  if (!running || targetEnd === null) return;
+  const msLeft = targetEnd - Date.now();
+
+  // last 10 seconds short beep
+  const secLeft = Math.ceil(msLeft / 1000);
+  if (prefs.soundLast10 && secLeft > 0 && secLeft <= 10) {
+    if (prevSecondRef.current !== secLeft) {
+      simpleBeep(700, 0.06);
+      prevSecondRef.current = secLeft;
+    }
+  }
+
+  if (msLeft <= 0) {
+    if (!doneNotifiedRef.current) {
       notifyDone();
+      doneNotifiedRef.current = true;
+    }
+
+    if (repeat) {
+      const now = Date.now();
+      setTargetEnd(now + totalMs);
+      setRemainingMs(totalMs);
+      doneNotifiedRef.current = false; // for next cycle
       return;
     }
-    setRemainingMs(msLeft);
-  }, running ? 200 : null);
 
-  const start = () => {
-    if (totalMs <= 0) return;
-    const now = Date.now();
-    setTargetEnd(now + (remainingMs === totalMs ? totalMs : remainingMs));
-    setRunning(true);
-  };
+    if (prefs.countUpAfterEnd) {
+      setRemainingMs(msLeft); // negative, will show as +time
+      return;
+    }
+
+    setRunning(false);
+    setRemainingMs(0);
+    return;
+  }
+  setRemainingMs(msLeft);
+}, running ? 200 : null);
+
+const start = () => {
+  if (totalMs <= 0) return;
+  const now = Date.now();
+  setTargetEnd(now + (remainingMs === totalMs ? totalMs : remainingMs));
+  setRunning(true);
+  doneNotifiedRef.current = false;
+};
 
   const pause = () => {
     setRunning(false);
@@ -82,11 +122,13 @@ export default function BigTimer() {
     setTargetEnd(null);
   };
 
-  const reset = () => {
-    setRunning(false);
-    setTargetEnd(null);
-    setRemainingMs(totalMs);
-  };
+const reset = () => {
+  setRunning(false);
+  setTargetEnd(null);
+  setRemainingMs(totalMs);
+  doneNotifiedRef.current = false;
+  prevSecondRef.current = null;
+};
 
   const toggle = () => (running ? pause() : start());
 
@@ -112,25 +154,53 @@ export default function BigTimer() {
     }
   };
 
-  React.useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === " ") {
-        e.preventDefault();
-        toggle();
-      }
-      if (e.key.toLowerCase() === "r") {
-        reset();
-      }
-      if (e.key.toLowerCase() === "f") {
-        toggleFullscreen();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [running, remainingMs, totalMs]);
+React.useEffect(() => {
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key === " ") {
+      e.preventDefault();
+      toggle();
+    }
+    if (e.key.toLowerCase() === "r" && !e.shiftKey) {
+      reset();
+    }
+    if (e.key.toLowerCase() === "f") {
+      toggleFullscreen();
+    }
+    if (e.key.toLowerCase() === "r" && e.shiftKey) {
+      setRepeat((v) => !v);
+      toast(`Gjenta ${!repeat ? "på" : "av"}`);
+    }
+    if (e.key === "ArrowUp") {
+      adjustMs(60_000);
+    }
+    if (e.key === "ArrowDown") {
+      adjustMs(-60_000);
+    }
+  };
+  window.addEventListener("keydown", onKey);
+  return () => window.removeEventListener("keydown", onKey);
+}, [running, remainingMs, totalMs, repeat]);
 
-  function notifyDone() {
-    // WebAudio beep
+function simpleBeep(freq = 880, duration = 0.2) {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = "sine";
+    o.frequency.value = freq;
+    o.connect(g);
+    g.connect(ctx.destination);
+    const t0 = ctx.currentTime;
+    g.gain.setValueAtTime(0.001, t0);
+    g.gain.exponentialRampToValueAtTime(0.3, t0 + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+    o.start(t0);
+    o.stop(t0 + duration);
+  } catch {}
+}
+
+function notifyDone() {
+  if (prefs.soundEnd) {
     try {
       const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const duration = 0.2; // seconds per beep
@@ -148,32 +218,79 @@ export default function BigTimer() {
         o.start(t0);
         o.stop(t0 + duration);
       };
-      // three quick beeps
       [880, 660, 990].forEach((f, i) => beep(f, i * 0.25));
     } catch {}
-
-    toast.success("Tiden er ute!", {
-      description: "Trykk R for å nullstille, eller start på nytt.",
-    });
   }
+
+  if (document.visibilityState === "hidden" && (window as any).Notification && prefs.notifyOnEnd) {
+    try {
+      new Notification("Tiden er ute!", { body: "Trykk R for å nullstille, eller start på nytt." });
+    } catch {}
+  }
+
+  toast.success("Tiden er ute!", {
+    description: "Trykk R for å nullstille, eller start på nytt.",
+  });
+}
 
   const ringStyle = {
     ["--progress" as any]: `${percent * 360}deg`,
   } as React.CSSProperties;
 
+  const adjustMs = (delta: number) => {
+    const nextTotal = Math.max(0, totalMs + delta);
+    setTotalMs(nextTotal);
+    if (running && targetEnd) {
+      const now = Date.now();
+      const newTarget = targetEnd + delta;
+      setTargetEnd(newTarget);
+      setRemainingMs(Math.max(-nextTotal, newTarget - now));
+    } else {
+      setRemainingMs(Math.max(0, remainingMs + delta));
+    }
+  };
+
+  // hold helper
+  const useHold = (fn: () => void, interval = 120) => {
+    const t = React.useRef<number | null>(null);
+    const startHold = () => {
+      fn();
+      t.current = window.setInterval(fn, interval);
+    };
+    const stopHold = () => {
+      if (t.current) {
+        clearInterval(t.current);
+        t.current = null;
+      }
+    };
+    return { startHold, stopHold } as const;
+  };
+
   return (
     <div ref={containerRef} className={cn("min-h-screen bg-background bg-hero")}>      
-      <header className="container py-8">
+      <header className="container py-6">
         <nav className="flex items-center justify-between">
-          <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
-            Stor nedtellingstimer
-          </h1>
-          <div className="hidden sm:flex gap-2">
-            {presets.map((m) => (
-              <Button key={m} variant="secondary" onClick={() => setCustom(m, 0)} aria-label={`Sett ${m} minutter`}>
-                {m}m
-              </Button>
-            ))}
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">Stor nedtellingstimer</h1>
+            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+              <Link to="/info" className="flex items-center gap-1"><Info size={16}/> Info</Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+              <Link to="/preferences" className="flex items-center gap-1"><SlidersHorizontal size={16}/> Preferanser</Link>
+            </Button>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Gjenta</span>
+              <Switch checked={repeat} onCheckedChange={(v) => setRepeat(v)} aria-label="Gjenta" />
+            </div>
+            <div className="hidden sm:flex gap-2">
+              {presets.map((m) => (
+                <Button key={m} variant="secondary" onClick={() => setCustom(m, 0)} aria-label={`Sett ${m} minutter`}>
+                  {m}m
+                </Button>
+              ))}
+            </div>
           </div>
         </nav>
       </header>
@@ -182,15 +299,41 @@ export default function BigTimer() {
         <section className="flex flex-col items-center gap-8">
           <article className="w-full max-w-4xl" aria-live="polite" aria-atomic="true">
             <div className={cn("relative aspect-square mx-auto w-full max-w-[min(80vw,700px)]")}>              
+              {/* +/- floating controls */}
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-10">
+                {(() => {
+                  const inc = () => adjustMs(60_000);
+                  const dec = () => adjustMs(-60_000);
+                  const incHold = useHold(() => adjustMs(10_000));
+                  const decHold = useHold(() => adjustMs(-10_000));
+                  return (
+                    <>
+                      <Button size="icon" variant="secondary"
+                        onMouseDown={incHold.startHold} onMouseUp={incHold.stopHold} onMouseLeave={incHold.stopHold}
+                        onTouchStart={incHold.startHold} onTouchEnd={incHold.stopHold}
+                        onClick={inc} aria-label="Øk tid">
+                        <Plus />
+                      </Button>
+                      <Button size="icon" variant="secondary"
+                        onMouseDown={decHold.startHold} onMouseUp={decHold.stopHold} onMouseLeave={decHold.stopHold}
+                        onTouchStart={decHold.startHold} onTouchEnd={decHold.stopHold}
+                        onClick={dec} aria-label="Reduser tid">
+                        <Minus />
+                      </Button>
+                    </>
+                  );
+                })()}
+              </div>
+
               <div className={cn("timer-ring rounded-full p-2 transition-[box-shadow] duration-300", running ? "animate-glow" : "")}
                    style={ringStyle}
                    aria-hidden>
                 <div className="rounded-full bg-card/70 backdrop-blur-sm border border-border flex items-center justify-center h-full">
                   <div className="text-center select-none">
                     <div className="text-6xl md:text-8xl lg:text-9xl font-bold tabular-nums tracking-tight">
-                      {formatTime(remainingMs)}
+                      {formatTime(remainingMs, prefs.countUpAfterEnd)}
                     </div>
-                    <div className="mt-2 text-muted-foreground">{running ? "Pågår" : "Klar"}</div>
+                    <div className="mt-2 text-muted-foreground">{running ? (remainingMs < 0 ? "Teller opp" : "Pågår") : "Klar"}</div>
                   </div>
                 </div>
               </div>
@@ -241,6 +384,12 @@ export default function BigTimer() {
                   Fullskjerm (F)
                 </span>
               </Button>
+              <Button asChild variant="ghost">
+                <Link to="/info" className="flex items-center gap-1"><Info size={16}/> Info</Link>
+              </Button>
+              <Button asChild variant="ghost">
+                <Link to="/preferences" className="flex items-center gap-1"><SlidersHorizontal size={16}/> Preferanser</Link>
+              </Button>
               <div className="sm:hidden flex gap-2">
                 {presets.slice(0,4).map((m) => (
                   <Button key={m} variant="secondary" onClick={() => setCustom(m, 0)} aria-label={`Sett ${m} minutter`}>
@@ -248,7 +397,7 @@ export default function BigTimer() {
                   </Button>
                 ))}
               </div>
-              <p className="text-sm text-muted-foreground ml-auto">Mellomrom: start/pause · R: nullstill · F: fullskjerm</p>
+              <p className="text-sm text-muted-foreground ml-auto">Mellomrom: start/pause · R: nullstill · Shift+R: gjenta · F: fullskjerm</p>
             </div>
           </article>
         </section>
