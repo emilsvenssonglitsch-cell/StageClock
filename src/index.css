@@ -53,6 +53,12 @@ All colors MUST be HSL.
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Extended design tokens */
+    --gradient-hero: radial-gradient(1200px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), hsl(var(--primary) / 0.25), transparent 60%);
+    --gradient-surface: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted) / 0.3));
+    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.35);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
@@ -91,6 +97,12 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Extended design tokens (dark) */
+    --gradient-hero: radial-gradient(1200px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), hsl(var(--primary) / 0.20), transparent 60%);
+    --gradient-surface: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted) / 0.12));
+    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.35);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
@@ -101,5 +113,19 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .bg-hero {
+    background-image: var(--gradient-hero);
+    background-attachment: fixed;
+  }
+
+  .timer-ring {
+    background-image: conic-gradient(
+      hsl(var(--primary)) var(--progress, 0deg),
+      hsl(var(--muted)) 0deg
+    );
   }
 }
