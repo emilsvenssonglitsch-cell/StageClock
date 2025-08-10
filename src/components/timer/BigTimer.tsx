@@ -1,14 +1,14 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { Play, Pause, RotateCcw, Maximize2, Minimize2, Plus, Minus, Info, SlidersHorizontal } from "lucide-react";
+import { Play, Pause, Maximize2, Minimize2, Plus, Minus, Info, SlidersHorizontal, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { useTimerPreferences } from "@/components/timer/useTimerPreferences";
 
-const presets = [1, 5, 10, 15, 20, 25, 30]; // minutes
+
 
 function formatTime(ms: number, allowNegative = false) {
   const neg = ms < 0;
@@ -53,10 +53,7 @@ export default function BigTimer() {
   const minutesInput = Math.floor(totalMs / 60000);
   const secondsInput = Math.floor((totalMs % 60000) / 1000);
 
-  const percent = React.useMemo(() => {
-    if (totalMs <= 0) return 0;
-    return 1 - Math.max(0, remainingMs) / totalMs;
-  }, [remainingMs, totalMs]);
+/* progress ring removed */
 
   // Pointer reactive gradient
   React.useEffect(() => {
@@ -233,9 +230,7 @@ function notifyDone() {
   });
 }
 
-  const ringStyle = {
-    ["--progress" as any]: `${percent * 360}deg`,
-  } as React.CSSProperties;
+/* ring style removed */
 
   const adjustMs = (delta: number) => {
     const nextTotal = Math.max(0, totalMs + delta);
@@ -266,41 +261,48 @@ function notifyDone() {
     return { startHold, stopHold } as const;
   };
 
+  const absSec = Math.abs(Math.floor(remainingMs / 1000));
+  const dMin = Math.floor(absSec / 60);
+  const dSec = absSec % 60;
+
   return (
-    <div ref={containerRef} className={cn("min-h-screen bg-background bg-hero")}>      
-      <header className="container py-6">
-        <nav className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">Stor nedtellingstimer</h1>
-            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-              <Link to="/info" className="flex items-center gap-1"><Info size={16}/> Info</Link>
-            </Button>
-            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-              <Link to="/preferences" className="flex items-center gap-1"><SlidersHorizontal size={16}/> Preferanser</Link>
-            </Button>
+    <div ref={containerRef} className={cn("min-h-screen bg-background")}>
+      <header className="w-full py-3">
+        <nav className="container flex items-center justify-between text-primary">
+          <div className="flex items-center gap-6">
+            <Link to="/info" className="flex items-center gap-2 story-link"><Info size={18}/> Info</Link>
+            <Link to="/preferences" className="flex items-center gap-2 story-link"><SlidersHorizontal size={18}/> Preferences</Link>
+            <Link to="/blog" className="flex items-center gap-2 story-link"><BookOpen size={18}/> Blog</Link>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Gjenta</span>
-              <Switch checked={repeat} onCheckedChange={(v) => setRepeat(v)} aria-label="Gjenta" />
+              <span className="text-sm">Repeat</span>
+              <Switch checked={repeat} onCheckedChange={(v) => setRepeat(v)} aria-label="Repeat" />
             </div>
-            <div className="hidden sm:flex gap-2">
-              {presets.map((m) => (
-                <Button key={m} variant="secondary" onClick={() => setCustom(m, 0)} aria-label={`Sett ${m} minutter`}>
-                  {m}m
-                </Button>
-              ))}
-            </div>
+            <button onClick={toggleFullscreen} className="inline-flex items-center gap-2">
+              Fullscreen {document.fullscreenElement ? <Minimize2 size={18}/> : <Maximize2 size={18}/>}
+            </button>
           </div>
         </nav>
       </header>
 
       <main className="container pb-16">
         <section className="flex flex-col items-center gap-8">
-          <article className="w-full max-w-4xl" aria-live="polite" aria-atomic="true">
-            <div className={cn("relative aspect-square mx-auto w-full max-w-[min(80vw,700px)]")}>              
-              {/* +/- floating controls */}
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-10">
+          <article className="w-full" aria-live="polite" aria-atomic="true">
+            <div className="relative mx-auto w-full max-w-[min(92vw,1200px)] min-h-[60vh] flex items-center justify-center">
+              {/* Start/Pause floating control (left) */}
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
+                <Button onClick={toggle} className="rounded-full h-12 px-6 text-base shadow-lg">
+                  {running ? (
+                    <span className="flex items-center gap-2"><Pause size={18}/> Pause</span>
+                  ) : (
+                    <span className="flex items-center gap-2"><Play size={18}/> Start</span>
+                  )}
+                </Button>
+              </div>
+
+              {/* +/- floating controls (right) */}
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-10">
                 {(() => {
                   const inc = () => adjustMs(60_000);
                   const dec = () => adjustMs(-60_000);
@@ -311,13 +313,13 @@ function notifyDone() {
                       <Button size="icon" variant="secondary"
                         onMouseDown={incHold.startHold} onMouseUp={incHold.stopHold} onMouseLeave={incHold.stopHold}
                         onTouchStart={incHold.startHold} onTouchEnd={incHold.stopHold}
-                        onClick={inc} aria-label="Øk tid">
+                        onClick={inc} aria-label="Increase time">
                         <Plus />
                       </Button>
                       <Button size="icon" variant="secondary"
                         onMouseDown={decHold.startHold} onMouseUp={decHold.stopHold} onMouseLeave={decHold.stopHold}
                         onTouchStart={decHold.startHold} onTouchEnd={decHold.stopHold}
-                        onClick={dec} aria-label="Reduser tid">
+                        onClick={dec} aria-label="Decrease time">
                         <Minus />
                       </Button>
                     </>
@@ -325,81 +327,23 @@ function notifyDone() {
                 })()}
               </div>
 
-              <div className={cn("timer-ring rounded-full p-2 transition-[box-shadow] duration-300", running ? "animate-glow" : "")}
-                   style={ringStyle}
-                   aria-hidden>
-                <div className="rounded-full bg-card/70 backdrop-blur-sm border border-border flex items-center justify-center h-full">
-                  <div className="text-center select-none">
-                    <div className="text-6xl md:text-8xl lg:text-9xl font-bold tabular-nums tracking-tight">
-                      {formatTime(remainingMs, prefs.countUpAfterEnd)}
-                    </div>
-                    <div className="mt-2 text-muted-foreground">{running ? (remainingMs < 0 ? "Teller opp" : "Pågår") : "Klar"}</div>
+              {/* Time display */}
+              <div className="select-none text-foreground">
+                <div className="flex items-end gap-6">
+                  <div className="text-center">
+                    <div className="font-bold leading-none tabular-nums tracking-tight text-[clamp(4rem,22vw,18rem)]">{dMin}</div>
+                    <div className="mt-3 text-sm opacity-80">Minutes</div>
+                  </div>
+                  <div className="font-bold leading-none tabular-nums text-[clamp(4rem,22vw,18rem)]">:</div>
+                  <div className="text-center">
+                    <div className="font-bold leading-none tabular-nums tracking-tight text-[clamp(4rem,22vw,18rem)]">{String(dSec).padStart(2, '0')}</div>
+                    <div className="mt-3 text-sm opacity-80">Seconds</div>
                   </div>
                 </div>
               </div>
             </div>
           </article>
 
-          <article className="w-full max-w-3xl">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="col-span-2 sm:col-span-1">
-                <label className="block text-sm mb-1">Minutter</label>
-                <Input
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  disabled={running}
-                  value={minutesInput}
-                  onChange={(e) => setCustom(Number(e.target.value || 0), secondsInput)}
-                />
-              </div>
-              <div className="col-span-2 sm:col-span-1">
-                <label className="block text-sm mb-1">Sekunder</label>
-                <Input
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  max={59}
-                  disabled={running}
-                  value={secondsInput}
-                  onChange={(e) => setCustom(minutesInput, Number(e.target.value || 0))}
-                />
-              </div>
-              <Button onClick={toggle} className="h-12 text-base">
-                {running ? (
-                  <span className="flex items-center gap-2"><Pause size={18}/> Pause</span>
-                ) : (
-                  <span className="flex items-center gap-2"><Play size={18}/> Start</span>
-                )}
-              </Button>
-              <Button variant="secondary" onClick={reset} className="h-12 text-base">
-                <span className="flex items-center gap-2"><RotateCcw size={18}/> Nullstill</span>
-              </Button>
-            </div>
-
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <Button variant="outline" onClick={toggleFullscreen} aria-label="Fullskjerm">
-                <span className="flex items-center gap-2">
-                  {document.fullscreenElement ? <Minimize2 size={16}/> : <Maximize2 size={16}/>}
-                  Fullskjerm (F)
-                </span>
-              </Button>
-              <Button asChild variant="ghost">
-                <Link to="/info" className="flex items-center gap-1"><Info size={16}/> Info</Link>
-              </Button>
-              <Button asChild variant="ghost">
-                <Link to="/preferences" className="flex items-center gap-1"><SlidersHorizontal size={16}/> Preferanser</Link>
-              </Button>
-              <div className="sm:hidden flex gap-2">
-                {presets.slice(0,4).map((m) => (
-                  <Button key={m} variant="secondary" onClick={() => setCustom(m, 0)} aria-label={`Sett ${m} minutter`}>
-                    {m}m
-                  </Button>
-                ))}
-              </div>
-              <p className="text-sm text-muted-foreground ml-auto">Mellomrom: start/pause · R: nullstill · Shift+R: gjenta · F: fullskjerm</p>
-            </div>
-          </article>
         </section>
       </main>
 
