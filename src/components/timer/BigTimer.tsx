@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
@@ -46,6 +47,10 @@ export default function BigTimer() {
   const doneNotifiedRef = React.useRef(false);
   const prevSecondRef = React.useRef<number | null>(null);
 
+  // Inline time edit state
+  const [editing, setEditing] = React.useState(false);
+  const [timeInput, setTimeInput] = React.useState("");
+  const inputRef = React.useRef<HTMLInputElement>(null);
   React.useEffect(() => {
     localStorage.setItem("timer:repeat", repeat ? "1" : "0");
   }, [repeat]);
@@ -265,6 +270,54 @@ function notifyDone() {
   const dMin = Math.floor(absSec / 60);
   const dSec = absSec % 60;
 
+  // Time input parsing and handlers
+  const parseTimeInput = (raw: string): number | null => {
+    const t = raw.trim().replace(/,/g, ":").replace(/\s+/g, "");
+    if (!t) return null;
+    const parts = t.split(":").map((p) => Number(p));
+    if (parts.some((n) => Number.isNaN(n) || n < 0)) return null;
+
+    let seconds = 0;
+    if (parts.length === 3) {
+      const [h, m, s] = parts;
+      if (m > 59 || s > 59) return null;
+      seconds = h * 3600 + m * 60 + s;
+    } else if (parts.length === 2) {
+      const [m, s] = parts;
+      if (s > 59) return null;
+      seconds = m * 60 + s;
+    } else if (parts.length === 1) {
+      // Plain number -> minutes
+      seconds = parts[0] * 60;
+    } else {
+      return null;
+    }
+    return Math.max(0, seconds * 1000);
+  };
+
+  const startEditing = () => {
+    setRunning(false);
+    setEditing(true);
+    setTimeInput(formatTime(totalMs));
+    setTimeout(() => inputRef.current?.select(), 0);
+  };
+
+  const commitEditing = () => {
+    const ms = parseTimeInput(timeInput);
+    if (ms !== null) {
+      const mins = Math.floor(ms / 60000);
+      const secs = Math.floor((ms % 60000) / 1000);
+      setCustom(mins, secs);
+    } else {
+      toast.error("Ugyldig tidsformat. Bruk mm:ss eller hh:mm:ss.");
+    }
+    setEditing(false);
+  };
+
+  const cancelEditing = () => {
+    setEditing(false);
+  };
+
   return (
     <div ref={containerRef} className={cn("min-h-screen bg-background")}>
       <header className="w-full py-3">
@@ -329,17 +382,49 @@ function notifyDone() {
 
               {/* Time display */}
               <div className="select-none text-foreground">
-                <div className="flex items-end gap-6">
-                  <div className="text-center">
-                    <div className="font-bold leading-none tabular-nums tracking-tight text-[clamp(4rem,22vw,18rem)]">{dMin}</div>
-                    <div className="mt-3 text-sm opacity-80">Minutes</div>
+                {editing ? (
+                  <div className="flex items-end justify-center">
+                    <Input
+                      ref={inputRef}
+                      value={timeInput}
+                      onChange={(e) => setTimeInput(e.target.value)}
+                      onBlur={commitEditing}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          commitEditing();
+                        }
+                        if (e.key === "Escape") {
+                          e.preventDefault();
+                          cancelEditing();
+                        }
+                      }}
+                      aria-label="Sett tid"
+                      placeholder="mm:ss eller hh:mm:ss"
+                      className="h-auto w-[min(92vw,1200px)] border-0 bg-transparent text-center font-bold leading-none tabular-nums tracking-tight text-[clamp(4rem,22vw,18rem)] focus-visible:ring-0"
+                    />
                   </div>
-                  <div className="font-bold leading-none tabular-nums text-[clamp(4rem,22vw,18rem)]">:</div>
-                  <div className="text-center">
-                    <div className="font-bold leading-none tabular-nums tracking-tight text-[clamp(4rem,22vw,18rem)]">{String(dSec).padStart(2, '0')}</div>
-                    <div className="mt-3 text-sm opacity-80">Seconds</div>
-                  </div>
-                </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={startEditing}
+                    aria-label="Rediger tid"
+                    title="Klikk for å skrive inn tid"
+                    className="block"
+                  >
+                    <div className="flex items-end gap-6">
+                      <div className="text-center">
+                        <div className="font-bold leading-none tabular-nums tracking-tight text-[clamp(4rem,22vw,18rem)]">{dMin}</div>
+                        <div className="mt-3 text-sm opacity-80">Minutes</div>
+                      </div>
+                      <div className="font-bold leading-none tabular-nums text-[clamp(4rem,22vw,18rem)]">:</div>
+                      <div className="text-center">
+                        <div className="font-bold leading-none tabular-nums tracking-tight text-[clamp(4rem,22vw,18rem)]">{String(dSec).padStart(2, '0')}</div>
+                        <div className="mt-3 text-sm opacity-80">Seconds</div>
+                      </div>
+                    </div>
+                  </button>
+                )}
               </div>
             </div>
           </article>
