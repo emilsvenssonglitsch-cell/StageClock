@@ -18,8 +18,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/info" element={React.createElement(require("./pages/Info").default)} />
-          <Route path="/preferences" element={React.createElement(require("./pages/Preferences").default)} />
+          <Route path="/info" element={<Info />} />
+          <Route path="/preferences" element={<Preferences />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
