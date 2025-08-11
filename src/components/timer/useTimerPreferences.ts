@@ -3,15 +3,25 @@ import React from "react";
 export type TimerPreferences = {
   soundEnd: boolean; // play sound when timer ends
   soundLast10: boolean; // beep each of last 10 seconds
+  soundHalf: boolean; // play sound at half time
+  soundOneMin: boolean; // play sound when 1 minute remains
   countUpAfterEnd: boolean; // continue counting up after reaching 0
   notifyOnEnd: boolean; // browser notification when ends (if tab inactive)
+  soundSources?: {
+    end?: string; // data URL or URL for end sound
+    half?: string; // data URL or URL for half-time sound
+    oneMin?: string; // data URL or URL for 1-minute-left sound
+  };
 };
 
 const DEFAULT_PREFS: TimerPreferences = {
   soundEnd: true,
   soundLast10: false,
+  soundHalf: false,
+  soundOneMin: false,
   countUpAfterEnd: false,
   notifyOnEnd: false,
+  soundSources: {},
 };
 
 const LS_KEY = "timer:prefs";
