@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 const InfoPage = () => {
   React.useEffect(() => {
-    document.title = "Om – Stor nedtellingstimer";
+    document.title = "Om – StageClock";
   }, []);
 
   return (
@@ -14,11 +14,13 @@ const InfoPage = () => {
         <Button asChild variant="ghost">
           <Link to="/">← Tilbake</Link>
         </Button>
-        <h1 className="text-3xl font-semibold tracking-tight">Om Stor nedtellingstimer</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">Om StageClock</h1>
       </header>
 
       <section className="max-w-3xl animate-fade-in">
-        <p className="text-muted-foreground">En enkel, stor nedtellingstimer med hurtigtaster, fullskjerm, og preferanser.</p>
+        <p className="text-muted-foreground mb-3">StageClock er en app laget for presentasjoner og scener hvor du trenger en tydelig og stilren nedtelling.</p>
+        <p className="text-muted-foreground mb-3">Appen er utviklet av Emil med hjelp fra Lovable (basert på GPT-5), og er inspirert av funksjonene og utseendet til bigtimer.net.</p>
+        <p className="text-muted-foreground">StageClock lar deg styre tiden enkelt med tastatur, lydvarsler og fullskjermmodus.</p>
 
         <div className="mt-8">
           <Accordion type="single" collapsible className="w-full">
