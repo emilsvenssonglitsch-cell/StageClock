@@ -23,6 +23,17 @@ function formatTime(ms: number, allowNegative = false) {
   return allowNegative && neg ? `+${str}` : str;
 }
 
+// Always return HH:MM:SS with leading zeros (used when entering edit mode)
+function formatHMS(ms: number) {
+  const totalSeconds = Math.floor(Math.max(0, Math.abs(ms)) / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return [hours, minutes, seconds]
+    .map((v) => String(v).padStart(2, "0"))
+    .join(":");
+}
+
 function useInterval(callback: () => void, delay: number | null) {
   const savedCallback = React.useRef(callback);
   React.useEffect(() => {
@@ -298,7 +309,7 @@ function notifyDone() {
   const startEditing = () => {
     setRunning(false);
     setEditing(true);
-    setTimeInput(formatTime(totalMs));
+    setTimeInput(formatHMS(totalMs));
     setTimeout(() => inputRef.current?.select(), 0);
   };
 
