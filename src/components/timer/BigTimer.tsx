@@ -278,7 +278,8 @@ function notifyDone() {
   };
 
   const absSec = Math.abs(Math.floor(remainingMs / 1000));
-  const dMin = Math.floor(absSec / 60);
+  const dHour = Math.floor(absSec / 3600);
+  const dMin = dHour > 0 ? Math.floor((absSec % 3600) / 60) : Math.floor(absSec / 60);
   const dSec = absSec % 60;
 
   // Time input parsing and handlers
@@ -412,7 +413,7 @@ function notifyDone() {
                       }}
                       aria-label="Sett tid"
                       placeholder="mm:ss eller hh:mm:ss"
-                      className="h-auto md:h-auto w-[min(92vw,1200px)] border-0 bg-transparent text-center font-bold leading-none md:leading-none tabular-nums tracking-tight text-[clamp(4rem,22vw,18rem)] md:text-[clamp(4rem,22vw,18rem)] focus-visible:ring-0"
+                      className="h-auto md:h-auto w-[min(92vw,1200px)] border-0 bg-transparent text-center font-bold leading-none md:leading-none tabular-nums tracking-tight text-[clamp(3.5rem,18vw,14rem)] md:text-[clamp(3.5rem,18vw,14rem)] focus-visible:ring-0"
                     />
                   </div>
                 ) : (
@@ -424,13 +425,22 @@ function notifyDone() {
                     className="block"
                   >
                     <div className="flex items-end gap-6">
+                      {dHour > 0 && (
+                        <>
+                          <div className="text-center">
+                            <div className="font-bold leading-none tabular-nums tracking-tight text-[clamp(3.5rem,18vw,14rem)]">{String(dHour).padStart(2, '0')}</div>
+                            <div className="mt-3 text-sm opacity-80">Hours</div>
+                          </div>
+                          <div className="font-bold leading-none tabular-nums text-[clamp(3.5rem,18vw,14rem)]">:</div>
+                        </>
+                      )}
                       <div className="text-center">
-                        <div className="font-bold leading-none tabular-nums tracking-tight text-[clamp(4rem,22vw,18rem)]">{dMin}</div>
+                        <div className="font-bold leading-none tabular-nums tracking-tight text-[clamp(3.5rem,18vw,14rem)]">{dHour > 0 ? String(dMin).padStart(2, '0') : dMin}</div>
                         <div className="mt-3 text-sm opacity-80">Minutes</div>
                       </div>
-                      <div className="font-bold leading-none tabular-nums text-[clamp(4rem,22vw,18rem)]">:</div>
+                      <div className="font-bold leading-none tabular-nums text-[clamp(3.5rem,18vw,14rem)]">:</div>
                       <div className="text-center">
-                        <div className="font-bold leading-none tabular-nums tracking-tight text-[clamp(4rem,22vw,18rem)]">{String(dSec).padStart(2, '0')}</div>
+                        <div className="font-bold leading-none tabular-nums tracking-tight text-[clamp(3.5rem,18vw,14rem)]">{String(dSec).padStart(2, '0')}</div>
                         <div className="mt-3 text-sm opacity-80">Seconds</div>
                       </div>
                     </div>
