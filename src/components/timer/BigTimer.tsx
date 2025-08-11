@@ -412,7 +412,7 @@ function notifyDone() {
                       }}
                       aria-label="Sett tid"
                       placeholder="mm:ss eller hh:mm:ss"
-                      className="h-auto w-[min(92vw,1200px)] border-0 bg-transparent text-center font-bold leading-none tabular-nums tracking-tight text-[clamp(4rem,22vw,18rem)] focus-visible:ring-0"
+                      className="h-auto md:h-auto w-[min(92vw,1200px)] border-0 bg-transparent text-center font-bold leading-none md:leading-none tabular-nums tracking-tight text-[clamp(4rem,22vw,18rem)] md:text-[clamp(4rem,22vw,18rem)] focus-visible:ring-0"
                     />
                   </div>
                 ) : (
