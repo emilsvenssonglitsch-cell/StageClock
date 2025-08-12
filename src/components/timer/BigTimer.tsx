@@ -58,6 +58,17 @@ export default function BigTimer() {
   const doneNotifiedRef = React.useRef(false);
   const prevSecondRef = React.useRef<number | null>(null);
 
+  // Track fullscreen state for responsive scaling
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
+  React.useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(document.fullscreenElement === containerRef.current);
+    };
+    document.addEventListener("fullscreenchange", handleFsChange);
+    handleFsChange();
+    return () => document.removeEventListener("fullscreenchange", handleFsChange);
+  }, []);
+
   // Inline time edit state
   const [editing, setEditing] = React.useState(false);
   const [timeInput, setTimeInput] = React.useState("");
@@ -330,6 +341,7 @@ function notifyDone() {
     setEditing(false);
   };
 
+  const timeSize = isFullscreen ? 'text-[clamp(7rem,30vw,28rem)]' : 'text-[clamp(3.5rem,18vw,14rem)]';
   return (
     <div ref={containerRef} className={cn("min-h-screen bg-background")}>
       <header className="w-full py-3">
@@ -345,7 +357,7 @@ function notifyDone() {
               <Switch checked={repeat} onCheckedChange={(v) => setRepeat(v)} aria-label="Repeat" />
             </div>
             <button onClick={toggleFullscreen} className="inline-flex items-center gap-2">
-              Fullscreen {document.fullscreenElement ? <Minimize2 size={18}/> : <Maximize2 size={18}/>}
+              Fullscreen {isFullscreen ? <Minimize2 size={18}/> : <Maximize2 size={18}/>}
             </button>
           </div>
         </nav>
@@ -354,7 +366,7 @@ function notifyDone() {
       <main className="container pb-16">
         <section className="flex flex-col items-center gap-8">
           <article className="w-full" aria-live="polite" aria-atomic="true">
-            <div className="relative mx-auto w-full max-w-[min(92vw,1200px)] min-h-[60vh] flex items-center justify-center">
+            <div className={cn("relative mx-auto w-full flex items-center justify-center", isFullscreen ? "max-w-none min-h-[calc(100vh-8rem)]" : "max-w-[min(92vw,1200px)] min-h-[60vh]")}>
               {/* Start/Pause floating control (left) */}
               <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
                 <Button onClick={toggle} className="rounded-full h-12 px-6 text-base shadow-lg">
@@ -413,7 +425,7 @@ function notifyDone() {
                       }}
                       aria-label="Sett tid"
                       placeholder="mm:ss eller hh:mm:ss"
-                      className="h-auto md:h-auto w-[min(92vw,1200px)] border-0 bg-transparent text-center font-bold leading-none md:leading-none tabular-nums tracking-tight text-[clamp(3.5rem,18vw,14rem)] md:text-[clamp(3.5rem,18vw,14rem)] focus-visible:ring-0"
+                      className={cn("h-auto md:h-auto w-full border-0 bg-transparent text-center font-bold leading-none md:leading-none tabular-nums focus-visible:ring-0", isFullscreen ? "tracking-tighter text-[clamp(7rem,30vw,28rem)]" : "tracking-tight w-[min(92vw,1200px)] text-[clamp(3.5rem,18vw,14rem)] md:text-[clamp(3.5rem,18vw,14rem)]")}
                     />
                   </div>
                 ) : (
@@ -428,20 +440,20 @@ function notifyDone() {
                       {dHour > 0 && (
                         <>
                           <div className="text-center">
-                            <div className="font-bold leading-none tabular-nums tracking-tight text-[clamp(3.5rem,18vw,14rem)]">{String(dHour).padStart(2, '0')}</div>
-                            <div className="mt-3 text-sm opacity-80">Hours</div>
+                            <div className={cn("font-bold leading-none tabular-nums", isFullscreen ? "tracking-tighter" : "tracking-tight", timeSize)}>{String(dHour).padStart(2, '0')}</div>
+                            <div className={cn("mt-3 text-sm opacity-80", isFullscreen && "hidden")}>Hours</div>
                           </div>
-                          <div className="font-bold leading-none tabular-nums text-[clamp(3.5rem,18vw,14rem)]">:</div>
+                          <div className={cn("font-bold leading-none tabular-nums", timeSize)}>:</div>
                         </>
                       )}
                       <div className="text-center">
-                        <div className="font-bold leading-none tabular-nums tracking-tight text-[clamp(3.5rem,18vw,14rem)]">{dHour > 0 ? String(dMin).padStart(2, '0') : dMin}</div>
-                        <div className="mt-3 text-sm opacity-80">Minutes</div>
+                        <div className={cn("font-bold leading-none tabular-nums", isFullscreen ? "tracking-tighter" : "tracking-tight", timeSize)}>{dHour > 0 ? String(dMin).padStart(2, '0') : dMin}</div>
+                        <div className={cn("mt-3 text-sm opacity-80", isFullscreen && "hidden")}>Minutes</div>
                       </div>
-                      <div className="font-bold leading-none tabular-nums text-[clamp(3.5rem,18vw,14rem)]">:</div>
+                      <div className={cn("font-bold leading-none tabular-nums", timeSize)}>:</div>
                       <div className="text-center">
-                        <div className="font-bold leading-none tabular-nums tracking-tight text-[clamp(3.5rem,18vw,14rem)]">{String(dSec).padStart(2, '0')}</div>
-                        <div className="mt-3 text-sm opacity-80">Seconds</div>
+                        <div className={cn("font-bold leading-none tabular-nums", isFullscreen ? "tracking-tighter" : "tracking-tight", timeSize)}>{String(dSec).padStart(2, '0')}</div>
+                        <div className={cn("mt-3 text-sm opacity-80", isFullscreen && "hidden")}>Seconds</div>
                       </div>
                     </div>
                   </button>
