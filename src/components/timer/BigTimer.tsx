@@ -70,6 +70,9 @@ export default function BigTimer() {
     return () => document.removeEventListener("fullscreenchange", handleFsChange);
   }, []);
 
+  // Active custom audio instance
+  const activeAudioRef = React.useRef<HTMLAudioElement | null>(null);
+
   // Inline time edit state
   const [editing, setEditing] = React.useState(false);
   const [timeInput, setTimeInput] = React.useState("");
@@ -153,6 +156,12 @@ const reset = () => {
   setRemainingMs(totalMs);
   doneNotifiedRef.current = false;
   prevSecondRef.current = null;
+  // Stop any playing custom audio
+  const a = activeAudioRef.current;
+  if (a) {
+    try { a.pause(); a.currentTime = 0; } catch {}
+    activeAudioRef.current = null;
+  }
 };
 
   const toggle = () => (running ? pause() : start());
@@ -230,8 +239,18 @@ async function notifyDone() {
       // Try custom stored sound first
       const customUrl = await getAudioUrl('end');
       if (customUrl) {
-        const audio = new Audio(customUrl);
-        await audio.play();
+        try {
+          const prev = activeAudioRef.current;
+          if (prev) {
+            try { prev.pause(); prev.currentTime = 0; } catch {}
+          }
+          const audio = new Audio(customUrl);
+          activeAudioRef.current = audio;
+          audio.onended = () => {
+            if (activeAudioRef.current === audio) activeAudioRef.current = null;
+          };
+          await audio.play();
+        } catch {}
       } else {
         // Fallback to simple beeps
         const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
