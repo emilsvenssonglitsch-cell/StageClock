@@ -5,6 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { useTimerPreferences, ensureNotificationPermission } from "@/components/timer/useTimerPreferences";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { getAudioUrl, saveAudio, deleteAudio } from "@/lib/audioStore";
 
 const PreferencesPage = () => {
   const [prefs, setPrefs] = useTimerPreferences();
@@ -29,34 +30,32 @@ const PreferencesPage = () => {
     setPrefs({ ...prefs, notifyOnEnd: val });
   };
 
-  const playSound = (src?: string) => {
-    if (!src) {
-      toast("Ingen lyd valgt.");
+  const playSoundDirect = async (key: 'end' | 'half' | 'oneMin') => {
+    const url = await getAudioUrl(key);
+    if (!url) {
+      toast("Ingen egendefinert lyd lagret.");
       return;
     }
-    const audio = new Audio(src);
+    const audio = new Audio(url);
     audio.play().catch(() => toast("Kunne ikke spille av lyd."));
   };
 
-  const onPickSound = (key: 'end' | 'half' | 'oneMin') => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onPickSound = (key: 'end' | 'half' | 'oneMin') => async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 512 * 1024) {
-      toast("Lydfilen er for stor (maks 512 kB).");
-      return;
+    try {
+      await saveAudio(key, file);
+      // Mark as present in prefs using a tiny marker string (no big data in LS)
+      const nextSources = { ...(prefs.soundSources ?? {}), [key]: 'idb' } as any;
+      setPrefs({ ...prefs, soundSources: nextSources });
+      toast("Lyd importert og lagret lokalt.");
+    } catch (err) {
+      console.error(err);
+      toast("Kunne ikke lagre lyd.");
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      setPrefs({
-        ...prefs,
-        soundSources: { ...(prefs.soundSources ?? {}), [key]: reader.result as string },
-      });
-      toast("Lyd importert.");
-    };
-    reader.readAsDataURL(file);
   };
 
-  const onTest = (key: 'end' | 'half' | 'oneMin') => () => playSound(prefs.soundSources?.[key]);
+  const onTest = (key: 'end' | 'half' | 'oneMin') => () => playSoundDirect(key);
 
   return (
     <main className="container py-10">
@@ -113,7 +112,7 @@ const PreferencesPage = () => {
               <div className="flex items-center gap-3">
                 <input type="file" accept="audio/*" onChange={onPickSound('end')} />
                 <Button variant="secondary" onClick={onTest('end')}>Test</Button>
-                <Button variant="ghost" onClick={() => setPrefs({ ...prefs, soundSources: { ...(prefs.soundSources ?? {}), end: undefined } })}>Fjern</Button>
+                <Button variant="ghost" onClick={async () => { await deleteAudio('end'); setPrefs({ ...prefs, soundSources: { ...(prefs.soundSources ?? {}), end: undefined } }); toast("Fjernet lyd."); }}>Fjern</Button>
               </div>
               <p className="text-xs text-muted-foreground">{prefs.soundSources?.end ? "Egendefinert lyd valgt" : "Standardlyd brukes hvis tilgjengelig"}</p>
             </div>
@@ -123,7 +122,7 @@ const PreferencesPage = () => {
               <div className="flex items-center gap-3">
                 <input type="file" accept="audio/*" onChange={onPickSound('half')} />
                 <Button variant="secondary" onClick={onTest('half')}>Test</Button>
-                <Button variant="ghost" onClick={() => setPrefs({ ...prefs, soundSources: { ...(prefs.soundSources ?? {}), half: undefined } })}>Fjern</Button>
+                <Button variant="ghost" onClick={async () => { await deleteAudio('half'); setPrefs({ ...prefs, soundSources: { ...(prefs.soundSources ?? {}), half: undefined } }); toast("Fjernet lyd."); }}>Fjern</Button>
               </div>
               <p className="text-xs text-muted-foreground">{prefs.soundSources?.half ? "Egendefinert lyd valgt" : "Ingen valgt"}</p>
             </div>
@@ -133,11 +132,11 @@ const PreferencesPage = () => {
               <div className="flex items-center gap-3">
                 <input type="file" accept="audio/*" onChange={onPickSound('oneMin')} />
                 <Button variant="secondary" onClick={onTest('oneMin')}>Test</Button>
-                <Button variant="ghost" onClick={() => setPrefs({ ...prefs, soundSources: { ...(prefs.soundSources ?? {}), oneMin: undefined } })}>Fjern</Button>
+                <Button variant="ghost" onClick={async () => { await deleteAudio('oneMin'); setPrefs({ ...prefs, soundSources: { ...(prefs.soundSources ?? {}), oneMin: undefined } }); toast("Fjernet lyd."); }}>Fjern</Button>
               </div>
               <p className="text-xs text-muted-foreground">{prefs.soundSources?.oneMin ? "Egendefinert lyd valgt" : "Ingen valgt"}</p>
             </div>
-            <p className="text-xs text-muted-foreground">Tips: korte .mp3 eller .wav-filer fungerer best. Maks ca. 512 kB lagres i nettleseren.</p>
+            <p className="text-xs text-muted-foreground">Filene lagres lokalt i nettleseren (IndexedDB) og kan være store (avhengig av tilgjengelig lagring).</p>
           </div>
         </article>
 

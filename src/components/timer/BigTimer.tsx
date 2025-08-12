@@ -8,6 +8,7 @@ import { Play, Pause, Maximize2, Minimize2, Plus, Minus, Info, SlidersHorizontal
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { useTimerPreferences } from "@/components/timer/useTimerPreferences";
+import { getAudioUrl } from "@/lib/audioStore";
 
 
 
@@ -223,26 +224,34 @@ function simpleBeep(freq = 880, duration = 0.2) {
   } catch {}
 }
 
-function notifyDone() {
+async function notifyDone() {
   if (prefs.soundEnd) {
     try {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const duration = 0.2; // seconds per beep
-      const beep = (freq: number, when: number) => {
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.type = "sine";
-        o.frequency.value = freq;
-        o.connect(g);
-        g.connect(ctx.destination);
-        const t0 = ctx.currentTime + when;
-        g.gain.setValueAtTime(0.001, t0);
-        g.gain.exponentialRampToValueAtTime(0.3, t0 + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
-        o.start(t0);
-        o.stop(t0 + duration);
-      };
-      [880, 660, 990].forEach((f, i) => beep(f, i * 0.25));
+      // Try custom stored sound first
+      const customUrl = await getAudioUrl('end');
+      if (customUrl) {
+        const audio = new Audio(customUrl);
+        await audio.play();
+      } else {
+        // Fallback to simple beeps
+        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const duration = 0.2; // seconds per beep
+        const beep = (freq: number, when: number) => {
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.type = "sine";
+          o.frequency.value = freq;
+          o.connect(g);
+          g.connect(ctx.destination);
+          const t0 = ctx.currentTime + when;
+          g.gain.setValueAtTime(0.001, t0);
+          g.gain.exponentialRampToValueAtTime(0.3, t0 + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+          o.start(t0);
+          o.stop(t0 + duration);
+        };
+        [880, 660, 990].forEach((f, i) => beep(f, i * 0.25));
+      }
     } catch {}
   }
 
