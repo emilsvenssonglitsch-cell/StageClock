@@ -496,9 +496,6 @@ async function notifyDone() {
         </section>
       </main>
 
-      <footer className="container pb-8 text-center text-sm text-muted-foreground">
-        Inspirert av BigTimer. Ingen tilknytning.
-      </footer>
     </div>
   );
 }
