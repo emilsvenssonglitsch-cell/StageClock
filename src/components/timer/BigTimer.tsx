@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { Play, Pause, Maximize2, Minimize2, Plus, Minus, Info, SlidersHorizontal, BookOpen } from "lucide-react";
+import { Play, Pause, Maximize2, Minimize2, Plus, Minus, Info, SlidersHorizontal, BookOpen, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { useTimerPreferences } from "@/components/timer/useTimerPreferences";
@@ -395,14 +395,17 @@ async function notifyDone() {
         <section className="flex flex-col items-center gap-8">
           <article className="w-full" aria-live="polite" aria-atomic="true">
             <div className={cn("relative mx-auto w-full flex items-center justify-center", isFullscreen ? "max-w-none min-h-[calc(100vh-8rem)]" : "max-w-[min(92vw,1200px)] min-h-[60vh]")}>
-              {/* Start/Pause floating control (left) */}
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
+              {/* Start/Pause + Reset floating controls (left) */}
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10 flex flex-col items-stretch gap-3">
                 <Button onClick={toggle} className="rounded-full h-12 px-6 text-base shadow-lg">
                   {running ? (
                     <span className="flex items-center gap-2"><Pause size={18}/> Pause</span>
                   ) : (
                     <span className="flex items-center gap-2"><Play size={18}/> Start</span>
                   )}
+                </Button>
+                <Button onClick={reset} variant="secondary" className="rounded-full h-10 px-5 text-sm shadow-md" aria-label="Nullstill">
+                  <span className="flex items-center gap-2"><RotateCcw size={16}/> Nullstill</span>
                 </Button>
               </div>
 
