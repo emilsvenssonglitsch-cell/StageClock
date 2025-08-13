@@ -404,8 +404,8 @@ async function notifyDone() {
                     <span className="flex items-center gap-2"><Play size={18}/> Start</span>
                   )}
                 </Button>
-                <Button onClick={reset} className="rounded-full h-10 px-5 text-sm shadow-lg" aria-label="Nullstill">
-                  <span className="flex items-center gap-2"><RotateCcw size={16}/> Nullstill</span>
+                <Button onClick={reset} className="rounded-full h-12 px-6 text-base shadow-lg" aria-label="Nullstill">
+                  <span className="flex items-center gap-2"><RotateCcw size={18}/> Nullstill</span>
                 </Button>
               </div>
 
