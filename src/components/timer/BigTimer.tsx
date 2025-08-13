@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { useTimerPreferences } from "@/components/timer/useTimerPreferences";
 import { getAudioUrl } from "@/lib/audioStore";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 
 
@@ -49,6 +51,7 @@ function useInterval(callback: () => void, delay: number | null) {
 }
 
 export default function BigTimer() {
+  const { t } = useLanguage();
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [totalMs, setTotalMs] = React.useState(5 * 60 * 1000);
   const [remainingMs, setRemainingMs] = React.useState(totalMs);
@@ -181,10 +184,10 @@ const reset = () => {
     const el = containerRef.current ?? document.documentElement;
     if (!document.fullscreenElement) {
       await el.requestFullscreen().catch(() => {});
-      toast("Fullskjerm på");
+      toast(t.fullscreenOn);
     } else {
       await document.exitFullscreen().catch(() => {});
-      toast("Fullskjerm av");
+      toast(t.fullscreenOff);
     }
   };
 
@@ -202,7 +205,7 @@ React.useEffect(() => {
     }
     if (e.key.toLowerCase() === "r" && e.shiftKey) {
       setRepeat((v) => !v);
-      toast(`Gjenta ${!repeat ? "på" : "av"}`);
+      toast(`${t.repeat} ${!repeat ? t.repeatOn : t.repeatOff}`);
     }
     if (e.key === "ArrowUp") {
       adjustMs(60_000);
@@ -276,12 +279,12 @@ async function notifyDone() {
 
   if (document.visibilityState === "hidden" && (window as any).Notification && prefs.notifyOnEnd) {
     try {
-      new Notification("Tiden er ute!", { body: "Trykk R for å nullstille, eller start på nytt." });
+      new Notification(t.timeIsUp, { body: t.timeIsUpDescription });
     } catch {}
   }
 
-  toast.success("Tiden er ute!", {
-    description: "Trykk R for å nullstille, eller start på nytt.",
+  toast.success(t.timeIsUp, {
+    description: t.timeIsUpDescription,
   });
 }
 
@@ -360,7 +363,7 @@ async function notifyDone() {
       const secs = Math.floor((ms % 60000) / 1000);
       setCustom(mins, secs);
     } else {
-      toast.error("Ugyldig tidsformat. Bruk mm:ss eller hh:mm:ss.");
+      toast.error(t.invalidTimeFormat);
     }
     setEditing(false);
   };
@@ -375,17 +378,18 @@ async function notifyDone() {
       <header className="w-full py-3">
         <nav className="container flex items-center justify-between text-primary">
           <div className="flex items-center gap-6">
-            <Link to="/info" className="flex items-center gap-2 story-link"><Info size={18}/> Info</Link>
-            <Link to="/preferences" className="flex items-center gap-2 story-link"><SlidersHorizontal size={18}/> Preferences</Link>
-            <Link to="/blog" className="flex items-center gap-2 story-link"><BookOpen size={18}/> Blog</Link>
+            <Link to="/info" className="flex items-center gap-2 story-link"><Info size={18}/> {t.info}</Link>
+            <Link to="/preferences" className="flex items-center gap-2 story-link"><SlidersHorizontal size={18}/> {t.preferences}</Link>
+            <Link to="/blog" className="flex items-center gap-2 story-link"><BookOpen size={18}/> {t.blog}</Link>
           </div>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
-              <span className="text-sm">Repeat</span>
-              <Switch checked={repeat} onCheckedChange={(v) => setRepeat(v)} aria-label="Repeat" />
+              <span className="text-sm">{t.repeat}</span>
+              <Switch checked={repeat} onCheckedChange={(v) => setRepeat(v)} aria-label={t.repeat} />
             </div>
+            <LanguageSelector />
             <button onClick={toggleFullscreen} className="inline-flex items-center gap-2">
-              Fullscreen {isFullscreen ? <Minimize2 size={18}/> : <Maximize2 size={18}/>}
+              {t.fullscreen} {isFullscreen ? <Minimize2 size={18}/> : <Maximize2 size={18}/>}
             </button>
           </div>
         </nav>
@@ -399,13 +403,13 @@ async function notifyDone() {
               <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10 flex flex-col items-stretch gap-3">
                 <Button onClick={toggle} className="rounded-full h-12 px-6 text-base shadow-lg">
                   {running ? (
-                    <span className="flex items-center gap-2"><Pause size={18}/> Pause</span>
+                    <span className="flex items-center gap-2"><Pause size={18}/> {t.pause}</span>
                   ) : (
-                    <span className="flex items-center gap-2"><Play size={18}/> Start</span>
+                    <span className="flex items-center gap-2"><Play size={18}/> {t.start}</span>
                   )}
                 </Button>
-                <Button onClick={reset} className="rounded-full h-12 px-6 text-base shadow-lg" aria-label="Nullstill">
-                  <span className="flex items-center gap-2"><RotateCcw size={18}/> Nullstill</span>
+                <Button onClick={reset} className="rounded-full h-12 px-6 text-base shadow-lg" aria-label={t.reset}>
+                  <span className="flex items-center gap-2"><RotateCcw size={18}/> {t.reset}</span>
                 </Button>
               </div>
 
@@ -421,13 +425,13 @@ async function notifyDone() {
                       <Button size="icon"
                         onMouseDown={incHold.startHold} onMouseUp={incHold.stopHold} onMouseLeave={incHold.stopHold}
                         onTouchStart={incHold.startHold} onTouchEnd={incHold.stopHold}
-                        onClick={inc} aria-label="Increase time">
+                        onClick={inc} aria-label={t.increaseTime}>
                         <Plus />
                       </Button>
                       <Button size="icon"
                         onMouseDown={decHold.startHold} onMouseUp={decHold.stopHold} onMouseLeave={decHold.stopHold}
                         onTouchStart={decHold.startHold} onTouchEnd={decHold.stopHold}
-                        onClick={dec} aria-label="Decrease time">
+                        onClick={dec} aria-label={t.decreaseTime}>
                         <Minus />
                       </Button>
                     </>
@@ -454,8 +458,8 @@ async function notifyDone() {
                           cancelEditing();
                         }
                       }}
-                      aria-label="Sett tid"
-                      placeholder="mm:ss eller hh:mm:ss"
+                      aria-label={t.setTime}
+                      placeholder={t.timeFormat}
                       className={cn("h-auto md:h-auto w-full border-0 bg-transparent text-center font-bold leading-none md:leading-none tabular-nums focus-visible:ring-0", isFullscreen ? "tracking-tighter text-[clamp(7rem,30vw,28rem)]" : "tracking-tight w-[min(92vw,1200px)] text-[clamp(3.5rem,18vw,14rem)] md:text-[clamp(3.5rem,18vw,14rem)]")}
                     />
                   </div>
@@ -463,8 +467,8 @@ async function notifyDone() {
                   <button
                     type="button"
                     onClick={startEditing}
-                    aria-label="Rediger tid"
-                    title="Klikk for å skrive inn tid"
+                    aria-label={t.editTime}
+                    title={t.editTime}
                     className="block"
                   >
                     <div className="flex items-end gap-6">
@@ -472,19 +476,19 @@ async function notifyDone() {
                         <>
                           <div className="text-center">
                             <div className={cn("font-bold leading-none tabular-nums", isFullscreen ? "tracking-tighter" : "tracking-tight", timeSize)}>{String(dHour).padStart(2, '0')}</div>
-                            <div className={cn("mt-3 text-sm opacity-80", isFullscreen && "hidden")}>Hours</div>
+                            <div className={cn("mt-3 text-sm opacity-80", isFullscreen && "hidden")}>{t.hours}</div>
                           </div>
                           <div className={cn("font-bold leading-none tabular-nums", timeSize)}>:</div>
                         </>
                       )}
                       <div className="text-center">
                         <div className={cn("font-bold leading-none tabular-nums", isFullscreen ? "tracking-tighter" : "tracking-tight", timeSize)}>{dHour > 0 ? String(dMin).padStart(2, '0') : dMin}</div>
-                        <div className={cn("mt-3 text-sm opacity-80", isFullscreen && "hidden")}>Minutes</div>
+                        <div className={cn("mt-3 text-sm opacity-80", isFullscreen && "hidden")}>{t.minutes}</div>
                       </div>
                       <div className={cn("font-bold leading-none tabular-nums", timeSize)}>:</div>
                       <div className="text-center">
                         <div className={cn("font-bold leading-none tabular-nums", isFullscreen ? "tracking-tighter" : "tracking-tight", timeSize)}>{String(dSec).padStart(2, '0')}</div>
-                        <div className={cn("mt-3 text-sm opacity-80", isFullscreen && "hidden")}>Seconds</div>
+                        <div className={cn("mt-3 text-sm opacity-80", isFullscreen && "hidden")}>{t.seconds}</div>
                       </div>
                     </div>
                   </button>
