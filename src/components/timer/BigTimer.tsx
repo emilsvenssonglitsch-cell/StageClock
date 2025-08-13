@@ -404,7 +404,7 @@ async function notifyDone() {
                     <span className="flex items-center gap-2"><Play size={18}/> Start</span>
                   )}
                 </Button>
-                <Button onClick={reset} variant="secondary" className="rounded-full h-10 px-5 text-sm shadow-md" aria-label="Nullstill">
+                <Button onClick={reset} className="rounded-full h-10 px-5 text-sm shadow-lg" aria-label="Nullstill">
                   <span className="flex items-center gap-2"><RotateCcw size={16}/> Nullstill</span>
                 </Button>
               </div>
@@ -418,13 +418,13 @@ async function notifyDone() {
                   const decHold = useHold(() => adjustMs(-10_000));
                   return (
                     <>
-                      <Button size="icon" variant="secondary"
+                      <Button size="icon"
                         onMouseDown={incHold.startHold} onMouseUp={incHold.stopHold} onMouseLeave={incHold.stopHold}
                         onTouchStart={incHold.startHold} onTouchEnd={incHold.stopHold}
                         onClick={inc} aria-label="Increase time">
                         <Plus />
                       </Button>
-                      <Button size="icon" variant="secondary"
+                      <Button size="icon"
                         onMouseDown={decHold.startHold} onMouseUp={decHold.stopHold} onMouseLeave={decHold.stopHold}
                         onTouchStart={decHold.startHold} onTouchEnd={decHold.stopHold}
                         onClick={dec} aria-label="Decrease time">
