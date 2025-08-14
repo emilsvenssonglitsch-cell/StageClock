@@ -17,12 +17,14 @@ export function LanguageSelector() {
     { code: 'sv', name: t.swedish }
   ];
 
+  const currentLanguageName = languages.find(lang => lang.code === language)?.name || t.language;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="flex items-center gap-2">
           <Languages size={16} />
-          <span className="hidden sm:inline">{t.language}</span>
+          <span className="hidden sm:inline">{currentLanguageName}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
