@@ -7,6 +7,7 @@ interface Translations {
   info: string;
   preferences: string;
   blog: string;
+  back: string;
   
   // Timer
   start: string;
@@ -39,13 +40,65 @@ interface Translations {
   norwegian: string;
   english: string;
   swedish: string;
+
+  // Info page
+  aboutTitle: string;
+  aboutDescription1: string;
+  aboutDescription2: string;
+  aboutDescription3: string;
+  keyboardShortcuts: string;
+  keyboardShortcutSpace: string;
+  keyboardShortcutR: string;
+  keyboardShortcutShiftR: string;
+  keyboardShortcutF: string;
+  keyboardShortcutArrows: string;
+  urlTricks: string;
+  urlTricksDescription: string;
+
+  // Preferences page
+  preferencesTitle: string;
+  playSound: string;
+  whenTimeIsUp: string;
+  whenTimeIsUpDescription: string;
+  last10Seconds: string;
+  last10SecondsDescription: string;
+  halfway: string;
+  halfwayDescription: string;
+  oneMinuteLeft: string;
+  oneMinuteLeftDescription: string;
+  customSounds: string;
+  soundWhenTimeIsUp: string;
+  soundHalfway: string;
+  soundOneMinute: string;
+  test: string;
+  remove: string;
+  customSoundSelected: string;
+  defaultSoundUsed: string;
+  noSoundSelected: string;
+  soundStorageNote: string;
+  afterTimeIsUp: string;
+  countUp: string;
+  countUpDescription: string;
+  showNotifications: string;
+  showNotificationsDescription: string;
+  allowNotifications: string;
+  noCustomSound: string;
+  couldNotPlaySound: string;
+  soundImported: string;
+  couldNotSaveSound: string;
+  soundRemoved: string;
+
+  // Blog page
+  blogTitle: string;
+  comingSoon: string;
 }
 
 const translations: Record<Language, Translations> = {
   no: {
     info: 'Info',
-    preferences: 'Preferences',
-    blog: 'Blog',
+    preferences: 'Preferanser',
+    blog: 'Blogg',
+    back: '← Tilbake',
     start: 'Start',
     pause: 'Pause',
     reset: 'Nullstill',
@@ -69,12 +122,58 @@ const translations: Record<Language, Translations> = {
     language: 'Språk',
     norwegian: 'Norsk',
     english: 'Engelsk',
-    swedish: 'Svensk'
+    swedish: 'Svensk',
+    aboutTitle: 'Om StageClock',
+    aboutDescription1: 'StageClock er en app laget for presentasjoner og scener hvor du trenger en tydelig og stilren nedtelling.',
+    aboutDescription2: 'Appen er utviklet av Emil med hjelp fra Lovable (basert på GPT-5), og er inspirert av funksjonene og utseendet til bigtimer.net.',
+    aboutDescription3: 'StageClock lar deg styre tiden enkelt med tastatur, lydvarsler og fullskjermmodus.',
+    keyboardShortcuts: 'Tastatursnarveier',
+    keyboardShortcutSpace: 'Mellomrom: start/pause',
+    keyboardShortcutR: 'R: nullstill',
+    keyboardShortcutShiftR: 'Shift + R: veksle gjenta',
+    keyboardShortcutF: 'F: fullskjerm',
+    keyboardShortcutArrows: 'Pil opp/ned: øk/reduser tid (+/- 1 min)',
+    urlTricks: 'URL-triks',
+    urlTricksDescription: 'Kommer snart – angi starttid via URL-parametere.',
+    preferencesTitle: 'Preferanser',
+    playSound: 'Spill av lyd',
+    whenTimeIsUp: 'Når tiden er ute',
+    whenTimeIsUpDescription: 'Spill en lyd når nedtellingen når 0.',
+    last10Seconds: 'Siste 10 sekunder',
+    last10SecondsDescription: 'Pip for hvert sekund de siste 10 sekundene.',
+    halfway: 'Halvveis',
+    halfwayDescription: 'Spill en lyd når halveis av satt tid er passert.',
+    oneMinuteLeft: '1 minutt igjen',
+    oneMinuteLeftDescription: 'Spill en lyd når det gjenstår 1 minutt.',
+    customSounds: 'Egendefinerte lyder',
+    soundWhenTimeIsUp: 'Lyd når tiden er ute',
+    soundHalfway: 'Lyd ved halvveis',
+    soundOneMinute: 'Lyd når 1 minutt gjenstår',
+    test: 'Test',
+    remove: 'Fjern',
+    customSoundSelected: 'Egendefinert lyd valgt',
+    defaultSoundUsed: 'Standardlyd brukes hvis tilgjengelig',
+    noSoundSelected: 'Ingen valgt',
+    soundStorageNote: 'Filene lagres lokalt i nettleseren (IndexedDB) og kan være store (avhengig av tilgjengelig lagring).',
+    afterTimeIsUp: 'Når tiden er ute',
+    countUp: 'Tell opp',
+    countUpDescription: 'Fortsett å telle opp etter at tiden er ute.',
+    showNotifications: 'Vis varsler',
+    showNotificationsDescription: 'Vis nettleservarsel når timeren er ferdig i bakgrunnen.',
+    allowNotifications: 'Tillat varsler i nettleseren for å bruke denne funksjonen.',
+    noCustomSound: 'Ingen egendefinert lyd lagret.',
+    couldNotPlaySound: 'Kunne ikke spille av lyd.',
+    soundImported: 'Lyd importert og lagret lokalt.',
+    couldNotSaveSound: 'Kunne ikke lagre lyd.',
+    soundRemoved: 'Fjernet lyd.',
+    blogTitle: 'Blogg – StageClock',
+    comingSoon: 'Kommer snart.'
   },
   en: {
     info: 'Info',
     preferences: 'Preferences',
     blog: 'Blog',
+    back: '← Back',
     start: 'Start',
     pause: 'Pause',
     reset: 'Reset',
@@ -98,12 +197,58 @@ const translations: Record<Language, Translations> = {
     language: 'Language',
     norwegian: 'Norwegian',
     english: 'English',
-    swedish: 'Swedish'
+    swedish: 'Swedish',
+    aboutTitle: 'About StageClock',
+    aboutDescription1: 'StageClock is an app made for presentations and stages where you need a clear and stylish countdown.',
+    aboutDescription2: 'The app is developed by Emil with help from Lovable (based on GPT-5), and is inspired by the functions and appearance of bigtimer.net.',
+    aboutDescription3: 'StageClock lets you control time easily with keyboard, sound alerts and fullscreen mode.',
+    keyboardShortcuts: 'Keyboard shortcuts',
+    keyboardShortcutSpace: 'Space: start/pause',
+    keyboardShortcutR: 'R: reset',
+    keyboardShortcutShiftR: 'Shift + R: toggle repeat',
+    keyboardShortcutF: 'F: fullscreen',
+    keyboardShortcutArrows: 'Arrow up/down: increase/decrease time (+/- 1 min)',
+    urlTricks: 'URL tricks',
+    urlTricksDescription: 'Coming soon – set start time via URL parameters.',
+    preferencesTitle: 'Preferences',
+    playSound: 'Play sound',
+    whenTimeIsUp: 'When time is up',
+    whenTimeIsUpDescription: 'Play a sound when the countdown reaches 0.',
+    last10Seconds: 'Last 10 seconds',
+    last10SecondsDescription: 'Beep for each second in the last 10 seconds.',
+    halfway: 'Halfway',
+    halfwayDescription: 'Play a sound when halfway through the set time has passed.',
+    oneMinuteLeft: '1 minute left',
+    oneMinuteLeftDescription: 'Play a sound when 1 minute remains.',
+    customSounds: 'Custom sounds',
+    soundWhenTimeIsUp: 'Sound when time is up',
+    soundHalfway: 'Sound at halfway',
+    soundOneMinute: 'Sound when 1 minute remains',
+    test: 'Test',
+    remove: 'Remove',
+    customSoundSelected: 'Custom sound selected',
+    defaultSoundUsed: 'Default sound used if available',
+    noSoundSelected: 'None selected',
+    soundStorageNote: 'Files are stored locally in the browser (IndexedDB) and can be large (depending on available storage).',
+    afterTimeIsUp: 'After time is up',
+    countUp: 'Count up',
+    countUpDescription: 'Continue counting up after time is up.',
+    showNotifications: 'Show notifications',
+    showNotificationsDescription: 'Show browser notification when timer finishes in background.',
+    allowNotifications: 'Allow notifications in the browser to use this function.',
+    noCustomSound: 'No custom sound stored.',
+    couldNotPlaySound: 'Could not play sound.',
+    soundImported: 'Sound imported and stored locally.',
+    couldNotSaveSound: 'Could not save sound.',
+    soundRemoved: 'Sound removed.',
+    blogTitle: 'Blog – StageClock',
+    comingSoon: 'Coming soon.'
   },
   sv: {
     info: 'Info',
     preferences: 'Inställningar',
     blog: 'Blogg',
+    back: '← Tillbaka',
     start: 'Start',
     pause: 'Paus',
     reset: 'Återställ',
@@ -127,7 +272,52 @@ const translations: Record<Language, Translations> = {
     language: 'Språk',
     norwegian: 'Norska',
     english: 'Engelska',
-    swedish: 'Svenska'
+    swedish: 'Svenska',
+    aboutTitle: 'Om StageClock',
+    aboutDescription1: 'StageClock är en app gjord för presentationer och scener där du behöver en tydlig och stilren nedräkning.',
+    aboutDescription2: 'Appen är utvecklad av Emil med hjälp från Lovable (baserat på GPT-5), och är inspirerad av funktionerna och utseendet på bigtimer.net.',
+    aboutDescription3: 'StageClock låter dig styra tiden enkelt med tangentbord, ljudvarningar och helskärmsläge.',
+    keyboardShortcuts: 'Tangentbordsgenvägar',
+    keyboardShortcutSpace: 'Mellanslag: start/paus',
+    keyboardShortcutR: 'R: återställ',
+    keyboardShortcutShiftR: 'Shift + R: växla upprepa',
+    keyboardShortcutF: 'F: helskärm',
+    keyboardShortcutArrows: 'Pil upp/ner: öka/minska tid (+/- 1 min)',
+    urlTricks: 'URL-tricks',
+    urlTricksDescription: 'Kommer snart – ange starttid via URL-parametrar.',
+    preferencesTitle: 'Inställningar',
+    playSound: 'Spela ljud',
+    whenTimeIsUp: 'När tiden är ute',
+    whenTimeIsUpDescription: 'Spela ett ljud när nedräkningen når 0.',
+    last10Seconds: 'Sista 10 sekunderna',
+    last10SecondsDescription: 'Pip för varje sekund de sista 10 sekunderna.',
+    halfway: 'Halvvägs',
+    halfwayDescription: 'Spela ett ljud när halvvägs av inställd tid har passerat.',
+    oneMinuteLeft: '1 minut kvar',
+    oneMinuteLeftDescription: 'Spela ett ljud när 1 minut återstår.',
+    customSounds: 'Anpassade ljud',
+    soundWhenTimeIsUp: 'Ljud när tiden är ute',
+    soundHalfway: 'Ljud vid halvvägs',
+    soundOneMinute: 'Ljud när 1 minut återstår',
+    test: 'Testa',
+    remove: 'Ta bort',
+    customSoundSelected: 'Anpassat ljud valt',
+    defaultSoundUsed: 'Standardljud används om tillgängligt',
+    noSoundSelected: 'Inget valt',
+    soundStorageNote: 'Filerna lagras lokalt i webbläsaren (IndexedDB) och kan vara stora (beroende på tillgänglig lagring).',
+    afterTimeIsUp: 'Efter tiden är ute',
+    countUp: 'Räkna upp',
+    countUpDescription: 'Fortsätt räkna upp efter tiden är ute.',
+    showNotifications: 'Visa notifieringar',
+    showNotificationsDescription: 'Visa webbläsarnotifiering när timern slutar i bakgrunden.',
+    allowNotifications: 'Tillåt notifieringar i webbläsaren för att använda denna funktion.',
+    noCustomSound: 'Inget anpassat ljud lagrat.',
+    couldNotPlaySound: 'Kunde inte spela ljud.',
+    soundImported: 'Ljud importerat och lagrat lokalt.',
+    couldNotSaveSound: 'Kunde inte spara ljud.',
+    soundRemoved: 'Ljud borttaget.',
+    blogTitle: 'Blogg – StageClock',
+    comingSoon: 'Kommer snart.'
   }
 };
 
