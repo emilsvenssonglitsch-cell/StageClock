@@ -372,15 +372,28 @@ async function notifyDone() {
     setEditing(false);
   };
 
-  const timeSize = isFullscreen ? 'text-[clamp(7rem,30vw,28rem)]' : 'text-[clamp(3.5rem,18vw,14rem)]';
+  const timeSize = isFullscreen ? 'text-[clamp(12rem,20vw,24rem)]' : 'text-[clamp(3.5rem,18vw,14rem)]';
+  
+  const handleNavigationClick = async (to: string) => {
+    if (isFullscreen) {
+      try {
+        await document.exitFullscreen();
+      } catch {}
+    }
+    // Small delay to ensure fullscreen exits before navigation
+    setTimeout(() => {
+      window.location.href = to;
+    }, 100);
+  };
+
   return (
     <div ref={containerRef} className={cn("min-h-screen bg-background")}>
       <header className="w-full py-3">
         <nav className="container flex items-center justify-between text-primary">
           <div className="flex items-center gap-6">
-            <Link to="/info" className="flex items-center gap-2 story-link"><Info size={18}/> {t.info}</Link>
-            <Link to="/preferences" className="flex items-center gap-2 story-link"><SlidersHorizontal size={18}/> {t.preferences}</Link>
-            <Link to="/blog" className="flex items-center gap-2 story-link"><BookOpen size={18}/> {t.blog}</Link>
+            <button onClick={() => handleNavigationClick("/info")} className="flex items-center gap-2 story-link"><Info size={18}/> {t.info}</button>
+            <button onClick={() => handleNavigationClick("/preferences")} className="flex items-center gap-2 story-link"><SlidersHorizontal size={18}/> {t.preferences}</button>
+            <button onClick={() => handleNavigationClick("/blog")} className="flex items-center gap-2 story-link"><BookOpen size={18}/> {t.blog}</button>
           </div>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
@@ -460,7 +473,7 @@ async function notifyDone() {
                       }}
                       aria-label={t.setTime}
                       placeholder={t.timeFormat}
-                      className={cn("h-auto md:h-auto w-full border-0 bg-transparent text-center font-bold leading-none md:leading-none tabular-nums focus-visible:ring-0", isFullscreen ? "tracking-tighter text-[clamp(7rem,30vw,28rem)]" : "tracking-tight w-[min(92vw,1200px)] text-[clamp(3.5rem,18vw,14rem)] md:text-[clamp(3.5rem,18vw,14rem)]")}
+                      className={cn("h-auto md:h-auto w-full border-0 bg-transparent text-center font-bold leading-none md:leading-none tabular-nums focus-visible:ring-0", isFullscreen ? "tracking-tighter" : "tracking-tight w-[min(92vw,1200px)] md:text-[clamp(3.5rem,18vw,14rem)]", timeSize)}
                     />
                   </div>
                 ) : (
