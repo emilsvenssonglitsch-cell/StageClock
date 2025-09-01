@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { Play, Pause, Maximize2, Minimize2, Plus, Minus, Info, SlidersHorizontal, BookOpen, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useTimerPreferences } from "@/components/timer/useTimerPreferences";
 import { getAudioUrl } from "@/lib/audioStore";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -52,7 +52,6 @@ function useInterval(callback: () => void, delay: number | null) {
 
 export default function BigTimer() {
   const { t } = useLanguage();
-  const navigate = useNavigate();
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [totalMs, setTotalMs] = React.useState(5 * 60 * 1000);
   const [remainingMs, setRemainingMs] = React.useState(totalMs);
@@ -373,49 +372,17 @@ async function notifyDone() {
     setEditing(false);
   };
 
-  // Enhanced responsive sizing for fullscreen
-  const timeSize = isFullscreen 
-    ? 'text-[clamp(16rem,25vw,32rem)] sm:text-[clamp(18rem,28vw,36rem)] lg:text-[clamp(20rem,30vw,40rem)]' 
-    : 'text-[clamp(3.5rem,18vw,14rem)]';
+  // Keep proportional sizing in fullscreen - same as normal mode
+  const timeSize = 'text-[clamp(3.5rem,18vw,14rem)]';
   
-  const handleNavigationClick = (to: string) => {
-    if (isFullscreen) {
-      // Exit fullscreen first, then navigate
-      document.exitFullscreen().then(() => {
-        navigate(to);
-      }).catch(() => {
-        // Fallback if exit fullscreen fails
-        navigate(to);
-      });
-    } else {
-      // Direct navigation when not in fullscreen
-      navigate(to);
-    }
-  };
-
   return (
     <div ref={containerRef} className={cn("min-h-screen bg-background")}>
       <header className="w-full py-3">
         <nav className="container flex items-center justify-between text-primary">
           <div className="flex items-center gap-6">
-            <button 
-              onClick={() => handleNavigationClick("/info")} 
-              className="flex items-center gap-2 story-link cursor-pointer hover:text-primary/80 transition-colors"
-            >
-              <Info size={18}/> {t.info}
-            </button>
-            <button 
-              onClick={() => handleNavigationClick("/preferences")} 
-              className="flex items-center gap-2 story-link cursor-pointer hover:text-primary/80 transition-colors"
-            >
-              <SlidersHorizontal size={18}/> {t.preferences}
-            </button>
-            <button 
-              onClick={() => handleNavigationClick("/blog")} 
-              className="flex items-center gap-2 story-link cursor-pointer hover:text-primary/80 transition-colors"
-            >
-              <BookOpen size={18}/> {t.blog}
-            </button>
+            <Link to="/info" className="flex items-center gap-2 story-link"><Info size={18}/> {t.info}</Link>
+            <Link to="/preferences" className="flex items-center gap-2 story-link"><SlidersHorizontal size={18}/> {t.preferences}</Link>
+            <Link to="/blog" className="flex items-center gap-2 story-link"><BookOpen size={18}/> {t.blog}</Link>
           </div>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
