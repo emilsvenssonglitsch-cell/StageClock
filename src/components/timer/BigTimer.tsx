@@ -294,13 +294,18 @@ async function notifyDone() {
   const adjustMs = (delta: number) => {
     const nextTotal = Math.max(0, totalMs + delta);
     setTotalMs(nextTotal);
-    if (running && targetEnd) {
-      const now = Date.now();
+    
+    // If timer is not running, just update remaining time to match total
+    if (!running) {
+      setRemainingMs(nextTotal);
+      return;
+    }
+    
+    // If running, adjust the target end time
+    if (targetEnd) {
       const newTarget = targetEnd + delta;
       setTargetEnd(newTarget);
-      setRemainingMs(Math.max(-nextTotal, newTarget - now));
-    } else {
-      setRemainingMs(Math.max(0, remainingMs + delta));
+      setRemainingMs(Math.max(0, newTarget - Date.now()));
     }
   };
 
@@ -376,8 +381,7 @@ async function notifyDone() {
   // Keep proportional sizing in fullscreen - same as normal mode
   const timeSize = 'text-[clamp(3.5rem,18vw,14rem)]';
   
-  const handleNavigation = (path: string) => (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleNavigation = (path: string) => {
     if (isFullscreen) {
       document.exitFullscreen().then(() => navigate(path)).catch(() => navigate(path));
     } else {
@@ -390,9 +394,9 @@ async function notifyDone() {
       <header className="w-full py-3">
         <nav className="container flex items-center justify-between text-primary">
           <div className="flex items-center gap-6">
-            <Link to="/info" onClick={handleNavigation("/info")} className="flex items-center gap-2 story-link"><Info size={18}/> {t.info}</Link>
-            <Link to="/preferences" onClick={handleNavigation("/preferences")} className="flex items-center gap-2 story-link"><SlidersHorizontal size={18}/> {t.preferences}</Link>
-            <Link to="/blog" onClick={handleNavigation("/blog")} className="flex items-center gap-2 story-link"><BookOpen size={18}/> {t.blog}</Link>
+            <button onClick={() => handleNavigation("/info")} className="flex items-center gap-2 story-link"><Info size={18}/> {t.info}</button>
+            <button onClick={() => handleNavigation("/preferences")} className="flex items-center gap-2 story-link"><SlidersHorizontal size={18}/> {t.preferences}</button>
+            <button onClick={() => handleNavigation("/blog")} className="flex items-center gap-2 story-link"><BookOpen size={18}/> {t.blog}</button>
           </div>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
@@ -453,29 +457,28 @@ async function notifyDone() {
 
               {/* Time display */}
               <div className="select-none text-foreground">
-                {editing ? (
-                  <div className="flex items-end justify-center">
-                    <Input
-                      ref={inputRef}
-                      value={timeInput}
-                      onChange={(e) => setTimeInput(e.target.value)}
-                      onBlur={commitEditing}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          commitEditing();
-                        }
-                        if (e.key === "Escape") {
-                          e.preventDefault();
-                          cancelEditing();
-                        }
-                      }}
-                      aria-label={t.setTime}
-                      placeholder={t.timeFormat}
-                       className={cn("h-auto w-full border-0 bg-transparent text-center font-bold leading-none tabular-nums focus-visible:ring-0 tracking-tight", timeSize, "!text-inherit")}
-                       style={{ fontSize: 'inherit' }}
-                    />
-                  </div>
+                 {editing ? (
+                   <div className={cn("flex items-end justify-center", timeSize)}>
+                     <Input
+                       ref={inputRef}
+                       value={timeInput}
+                       onChange={(e) => setTimeInput(e.target.value)}
+                       onBlur={commitEditing}
+                       onKeyDown={(e) => {
+                         if (e.key === "Enter") {
+                           e.preventDefault();
+                           commitEditing();
+                         }
+                         if (e.key === "Escape") {
+                           e.preventDefault();
+                           cancelEditing();
+                         }
+                       }}
+                       aria-label={t.setTime}
+                       placeholder={t.timeFormat}
+                       className="h-auto w-full border-0 bg-transparent text-center font-bold leading-none tabular-nums focus-visible:ring-0 tracking-tight text-inherit"
+                     />
+                   </div>
                 ) : (
                   <button
                     type="button"
