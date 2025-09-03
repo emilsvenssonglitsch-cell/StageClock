@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { Play, Pause, Maximize2, Minimize2, Plus, Minus, Info, SlidersHorizontal, BookOpen, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTimerPreferences } from "@/components/timer/useTimerPreferences";
 import { getAudioUrl } from "@/lib/audioStore";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -52,6 +52,7 @@ function useInterval(callback: () => void, delay: number | null) {
 
 export default function BigTimer() {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [totalMs, setTotalMs] = React.useState(5 * 60 * 1000);
   const [remainingMs, setRemainingMs] = React.useState(totalMs);
@@ -375,14 +376,23 @@ async function notifyDone() {
   // Keep proportional sizing in fullscreen - same as normal mode
   const timeSize = 'text-[clamp(3.5rem,18vw,14rem)]';
   
+  const handleNavigation = (path: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (isFullscreen) {
+      document.exitFullscreen().then(() => navigate(path)).catch(() => navigate(path));
+    } else {
+      navigate(path);
+    }
+  };
+  
   return (
     <div ref={containerRef} className={cn("min-h-screen bg-background")}>
       <header className="w-full py-3">
         <nav className="container flex items-center justify-between text-primary">
           <div className="flex items-center gap-6">
-            <Link to="/info" className="flex items-center gap-2 story-link"><Info size={18}/> {t.info}</Link>
-            <Link to="/preferences" className="flex items-center gap-2 story-link"><SlidersHorizontal size={18}/> {t.preferences}</Link>
-            <Link to="/blog" className="flex items-center gap-2 story-link"><BookOpen size={18}/> {t.blog}</Link>
+            <a href="/info" onClick={handleNavigation("/info")} className="flex items-center gap-2 story-link"><Info size={18}/> {t.info}</a>
+            <a href="/preferences" onClick={handleNavigation("/preferences")} className="flex items-center gap-2 story-link"><SlidersHorizontal size={18}/> {t.preferences}</a>
+            <a href="/blog" onClick={handleNavigation("/blog")} className="flex items-center gap-2 story-link"><BookOpen size={18}/> {t.blog}</a>
           </div>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
@@ -462,7 +472,7 @@ async function notifyDone() {
                       }}
                       aria-label={t.setTime}
                       placeholder={t.timeFormat}
-                      className={cn("h-auto md:h-auto w-full border-0 bg-transparent text-center font-bold leading-none md:leading-none tabular-nums focus-visible:ring-0", isFullscreen ? "tracking-tighter" : "tracking-tight w-[min(92vw,1200px)] md:text-[clamp(3.5rem,18vw,14rem)]", timeSize)}
+                      className={cn("h-auto w-full border-0 bg-transparent text-center font-bold leading-none tabular-nums focus-visible:ring-0 tracking-tight", timeSize)}
                     />
                   </div>
                 ) : (
