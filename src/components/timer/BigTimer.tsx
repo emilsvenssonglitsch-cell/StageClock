@@ -390,9 +390,9 @@ async function notifyDone() {
       <header className="w-full py-3">
         <nav className="container flex items-center justify-between text-primary">
           <div className="flex items-center gap-6">
-            <a href="/info" onClick={handleNavigation("/info")} className="flex items-center gap-2 story-link"><Info size={18}/> {t.info}</a>
-            <a href="/preferences" onClick={handleNavigation("/preferences")} className="flex items-center gap-2 story-link"><SlidersHorizontal size={18}/> {t.preferences}</a>
-            <a href="/blog" onClick={handleNavigation("/blog")} className="flex items-center gap-2 story-link"><BookOpen size={18}/> {t.blog}</a>
+            <Link to="/info" onClick={handleNavigation("/info")} className="flex items-center gap-2 story-link"><Info size={18}/> {t.info}</Link>
+            <Link to="/preferences" onClick={handleNavigation("/preferences")} className="flex items-center gap-2 story-link"><SlidersHorizontal size={18}/> {t.preferences}</Link>
+            <Link to="/blog" onClick={handleNavigation("/blog")} className="flex items-center gap-2 story-link"><BookOpen size={18}/> {t.blog}</Link>
           </div>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
@@ -472,7 +472,8 @@ async function notifyDone() {
                       }}
                       aria-label={t.setTime}
                       placeholder={t.timeFormat}
-                      className={cn("h-auto w-full border-0 bg-transparent text-center font-bold leading-none tabular-nums focus-visible:ring-0 tracking-tight", timeSize)}
+                       className={cn("h-auto w-full border-0 bg-transparent text-center font-bold leading-none tabular-nums focus-visible:ring-0 tracking-tight", timeSize, "!text-inherit")}
+                       style={{ fontSize: 'inherit' }}
                     />
                   </div>
                 ) : (
