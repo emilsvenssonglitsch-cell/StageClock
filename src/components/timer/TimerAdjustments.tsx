@@ -2,12 +2,16 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Minus } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { cn } from "@/lib/utils";
+import type { ViewportDimensions } from "@/hooks/useViewport";
 
 interface TimerAdjustmentsProps {
   onAdjust: (delta: number) => void;
+  viewport: ViewportDimensions;
+  isFullscreen: boolean;
 }
 
-export function TimerAdjustments({ onAdjust }: TimerAdjustmentsProps) {
+export function TimerAdjustments({ onAdjust, viewport, isFullscreen }: TimerAdjustmentsProps) {
   const { t } = useLanguage();
 
   const useHold = (fn: () => void, interval = 120) => {
@@ -30,10 +34,30 @@ export function TimerAdjustments({ onAdjust }: TimerAdjustmentsProps) {
   const incHold = useHold(() => onAdjust(10_000));
   const decHold = useHold(() => onAdjust(-10_000));
 
+  const getButtonSize = () => {
+    if (isFullscreen) {
+      return viewport.isSmall ? "h-12 w-12" : "h-14 w-14";
+    }
+    return viewport.isSmall ? "h-8 w-8" : "h-10 w-10";
+  };
+
+  const getIconSize = () => {
+    if (isFullscreen) {
+      return viewport.isSmall ? 20 : 24;
+    }
+    return viewport.isSmall ? 16 : 18;
+  };
+
+  const buttonSize = getButtonSize();
+  const iconSize = getIconSize();
+
   return (
-    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-10">
+    <div className={cn(
+      "absolute top-1/2 -translate-y-1/2 z-10 flex gap-3",
+      viewport.isSmall ? "right-2 flex-row" : "right-4 flex-col"
+    )}>
       <Button 
-        size="icon"
+        className={cn("rounded-full", buttonSize)}
         onMouseDown={incHold.startHold} 
         onMouseUp={incHold.stopHold} 
         onMouseLeave={incHold.stopHold}
@@ -42,10 +66,10 @@ export function TimerAdjustments({ onAdjust }: TimerAdjustmentsProps) {
         onClick={inc} 
         aria-label={t.increaseTime}
       >
-        <Plus />
+        <Plus size={iconSize} />
       </Button>
       <Button 
-        size="icon"
+        className={cn("rounded-full", buttonSize)}
         onMouseDown={decHold.startHold} 
         onMouseUp={decHold.stopHold} 
         onMouseLeave={decHold.stopHold}
@@ -54,7 +78,7 @@ export function TimerAdjustments({ onAdjust }: TimerAdjustmentsProps) {
         onClick={dec} 
         aria-label={t.decreaseTime}
       >
-        <Minus />
+        <Minus size={iconSize} />
       </Button>
     </div>
   );

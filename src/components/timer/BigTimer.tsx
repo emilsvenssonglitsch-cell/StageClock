@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTimer } from "@/components/timer/useTimer";
+import { useViewport } from "@/hooks/useViewport";
 import { TimerDisplay } from "@/components/timer/TimerDisplay";
 import { TimerControls } from "@/components/timer/TimerControls";
 import { TimerAdjustments } from "@/components/timer/TimerAdjustments";
@@ -11,6 +12,7 @@ import { TimerNavigation } from "@/components/timer/TimerNavigation";
 export default function BigTimer() {
   const { t } = useLanguage();
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const viewport = useViewport();
   const {
     totalMs,
     remainingMs,
@@ -92,25 +94,41 @@ export default function BigTimer() {
         onToggleFullscreen={toggleFullscreen}
       />
 
-      <main className="container pb-16">
+      <main className={cn(
+        "container pb-16",
+        isFullscreen && "px-0"
+      )}>
         <section className="flex flex-col items-center gap-8">
           <article className="w-full" aria-live="polite" aria-atomic="true">
             <div className={cn(
               "relative mx-auto w-full flex items-center justify-center", 
-              isFullscreen ? "max-w-none min-h-[calc(100vh-8rem)]" : "max-w-[min(92vw,1200px)] min-h-[60vh]"
+              isFullscreen ? 
+                "max-w-none min-h-[calc(100vh-8rem)]" : 
+                viewport.isSmall ? 
+                  "max-w-full min-h-[50vh] px-4" :
+                  viewport.isMedium ?
+                    "max-w-[90vw] min-h-[55vh]" :
+                    "max-w-[min(92vw,1200px)] min-h-[60vh]"
             )}>
               <TimerControls
                 running={running}
                 onToggle={toggle}
                 onReset={reset}
+                viewport={viewport}
+                isFullscreen={isFullscreen}
               />
 
-              <TimerAdjustments onAdjust={adjustMs} />
+              <TimerAdjustments 
+                onAdjust={adjustMs}
+                viewport={viewport}
+                isFullscreen={isFullscreen}
+              />
 
               <TimerDisplay
                 remainingMs={remainingMs}
                 totalMs={totalMs}
                 isFullscreen={isFullscreen}
+                viewport={viewport}
                 onTimeSet={setCustom}
               />
             </div>

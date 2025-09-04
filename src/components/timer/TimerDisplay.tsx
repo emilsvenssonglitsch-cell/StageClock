@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import type { ViewportDimensions } from "@/hooks/useViewport";
 
 function formatHMS(ms: number) {
   const totalSeconds = Math.floor(Math.max(0, Math.abs(ms)) / 1000);
@@ -18,16 +19,34 @@ interface TimerDisplayProps {
   remainingMs: number;
   totalMs: number;
   isFullscreen: boolean;
+  viewport: ViewportDimensions;
   onTimeSet: (mins: number, secs: number) => void;
 }
 
-export function TimerDisplay({ remainingMs, totalMs, isFullscreen, onTimeSet }: TimerDisplayProps) {
+export function TimerDisplay({ remainingMs, totalMs, isFullscreen, viewport, onTimeSet }: TimerDisplayProps) {
   const { t } = useLanguage();
   const [editing, setEditing] = React.useState(false);
   const [timeInput, setTimeInput] = React.useState("");
   const inputRef = React.useRef<HTMLInputElement>(null);
 
-  const timeSize = 'text-[clamp(3.5rem,18vw,14rem)]';
+  // Dynamic sizing based on viewport and fullscreen
+  const getTimeSize = () => {
+    if (isFullscreen) {
+      return viewport.isSmall ? 
+        'text-[clamp(4rem,20vw,16rem)]' : 
+        'text-[clamp(6rem,22vw,18rem)]';
+    }
+    
+    if (viewport.isSmall) {
+      return 'text-[clamp(2.5rem,12vw,6rem)]';
+    } else if (viewport.isMedium) {
+      return 'text-[clamp(3rem,15vw,10rem)]';
+    } else {
+      return 'text-[clamp(3.5rem,18vw,14rem)]';
+    }
+  };
+
+  const timeSize = getTimeSize();
 
   const absSec = Math.abs(Math.floor(remainingMs / 1000));
   const dHour = Math.floor(absSec / 3600);
@@ -115,14 +134,17 @@ export function TimerDisplay({ remainingMs, totalMs, isFullscreen, onTimeSet }: 
           title={t.editTime}
           className="block"
         >
-          <div className="flex items-end gap-6">
+          <div className={cn(
+            "flex items-end",
+            viewport.isSmall ? "gap-2" : "gap-6"
+          )}>
             {dHour > 0 && (
               <>
                 <div className="text-center">
                   <div className={cn("font-bold leading-none tabular-nums", isFullscreen ? "tracking-tighter" : "tracking-tight", timeSize)}>
                     {String(dHour).padStart(2, '0')}
                   </div>
-                  <div className={cn("mt-3 text-sm opacity-80", isFullscreen && "hidden")}>{t.hours}</div>
+                  <div className={cn("mt-3 text-sm opacity-80", (isFullscreen || viewport.isSmall) && "hidden")}>{t.hours}</div>
                 </div>
                 <div className={cn("font-bold leading-none tabular-nums", timeSize)}>:</div>
               </>
@@ -131,14 +153,14 @@ export function TimerDisplay({ remainingMs, totalMs, isFullscreen, onTimeSet }: 
               <div className={cn("font-bold leading-none tabular-nums", isFullscreen ? "tracking-tighter" : "tracking-tight", timeSize)}>
                 {dHour > 0 ? String(dMin).padStart(2, '0') : dMin}
               </div>
-              <div className={cn("mt-3 text-sm opacity-80", isFullscreen && "hidden")}>{t.minutes}</div>
+              <div className={cn("mt-3 text-sm opacity-80", (isFullscreen || viewport.isSmall) && "hidden")}>{t.minutes}</div>
             </div>
             <div className={cn("font-bold leading-none tabular-nums", timeSize)}>:</div>
             <div className="text-center">
               <div className={cn("font-bold leading-none tabular-nums", isFullscreen ? "tracking-tighter" : "tracking-tight", timeSize)}>
                 {String(dSec).padStart(2, '0')}
               </div>
-              <div className={cn("mt-3 text-sm opacity-80", isFullscreen && "hidden")}>{t.seconds}</div>
+              <div className={cn("mt-3 text-sm opacity-80", (isFullscreen || viewport.isSmall) && "hidden")}>{t.seconds}</div>
             </div>
           </div>
         </button>
